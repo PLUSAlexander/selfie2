@@ -10,12 +10,12 @@ C\* is a tiny subset of the programming language C. C\* features global variable
 
 C\* Keywords: `uint64_t`, `void`, `sizeof`, `if`, `else`, `while`, `return`
 
-C\* Symbols: `integer`, `character`, `string`, `identifier`, `,`, `;`, `(`, `)`, `{`, `}`, `+`, `-`, `*`, `/`, `%`, `=`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `...`
+C\* Symbols: `integer`, `character`, `string`, `identifier`, `,`, `;`, `(`, `)`, `{`, `}`, `+`, `-`, `*`, `/`, `%`, `=`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `...`, `<<`, `>>`
 
 with:
 
 ```
-integer    = digit { digit } .
+integer    = digit { digit } | hex_digit .
 
 character  = "'" printable_character "'" .
 
@@ -30,6 +30,8 @@ and:
 digit  = "0" | ... | "9" .
 
 letter = "a" | ... | "z" | "A" | ... | "Z" .
+
+hex_digit = digit | "a" | ... | "f" | "A" | ... | "F" .
 ```
 
 C\* Grammar:
