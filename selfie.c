@@ -460,6 +460,9 @@ uint64_t SYM_GT           = 27; // >
 uint64_t SYM_GEQ          = 28; // >=
 uint64_t SYM_ELLIPSIS     = 29; // ...
 
+uint64_t SYM_SLL          = 34; // <<
+uint64_t SYM_SRL          = 35; // >>
+
 // symbols for bootstrapping
 
 uint64_t SYM_INT      = 30; // int
@@ -676,6 +679,8 @@ uint64_t is_mult_or_div_or_rem();
 uint64_t is_factor();
 uint64_t is_literal();
 
+uint64_t is_shift(); // [bitwise-shift-compilation]
+
 uint64_t is_neither_rbrace_nor_eof();
 uint64_t is_possibly_parameter(uint64_t is_already_variadic);
 
@@ -721,6 +726,8 @@ uint64_t compile_expression(); // returns type
 uint64_t compile_arithmetic(); // returns type
 uint64_t compile_term();       // returns type
 uint64_t compile_factor();     // returns type
+
+uint64_t compile_shift(); // [bitwise-shift-compilation]
 
 void load_small_and_medium_integer(uint64_t reg, uint64_t value);
 void load_big_integer(uint64_t value);
@@ -1007,6 +1014,8 @@ uint64_t F3_SW    = 2; // 010
 uint64_t F3_BEQ   = 0; // 000
 uint64_t F3_JALR  = 0; // 000
 uint64_t F3_ECALL = 0; // 000
+uint64_t F3_SLL   = 1; // [bitwise-shift-compilation]
+uint64_t F3_SRL   = 5; // [bitwise-shift-compilation]
 
 // f7-codes
 uint64_t F7_ADD  = 0;  // 0000000
@@ -1015,6 +1024,8 @@ uint64_t F7_SUB  = 32; // 0100000
 uint64_t F7_DIVU = 1;  // 0000001
 uint64_t F7_REMU = 1;  // 0000001
 uint64_t F7_SLTU = 0;  // 0000000
+uint64_t F7_SLL  = 0;  //  [bitwise-shift-compilation]
+uint64_t F7_SRL  = 0;  //  [bitwise-shift-compilation]
 
 // f12-codes (immediates)
 uint64_t F12_ECALL = 0; // 000000000000
@@ -1069,6 +1080,9 @@ void emit_mul(uint64_t rd, uint64_t rs1, uint64_t rs2);
 void emit_divu(uint64_t rd, uint64_t rs1, uint64_t rs2);
 void emit_remu(uint64_t rd, uint64_t rs1, uint64_t rs2);
 void emit_sltu(uint64_t rd, uint64_t rs1, uint64_t rs2);
+
+void emit_sll(uint64_t rd, uint64_t rs1, uint64_t rs2);
+void emit_srl(uint64_t rd, uint64_t rs1, uint64_t rs2);
 
 void emit_load(uint64_t rd, uint64_t rs1, uint64_t immediate);
 void emit_store(uint64_t rs1, uint64_t immediate, uint64_t rs2);
@@ -1197,6 +1211,8 @@ uint64_t ic_beq   = 0;
 uint64_t ic_jal   = 0;
 uint64_t ic_jalr  = 0;
 uint64_t ic_ecall = 0;
+uint64_t ic_sll   = 0; // [bitwise-shift-compilation]
+uint64_t ic_srl   = 0; // [bitwise-shift-compilation]
 
 // data counters
 
@@ -4371,6 +4387,15 @@ uint64_t is_mult_or_div_or_rem() {
     return 0;
 }
 
+uint64_t is_shift() { // [bitwise-shift-compilation]
+  if (symbol == SYM_SLL)
+    return 1;
+  else if (symbol == SYM_SRL)
+    return 1;
+  else
+    return 0;
+}
+
 uint64_t is_factor() {
   if (symbol == SYM_LPARENTHESIS)
     return 1;
@@ -5179,6 +5204,48 @@ uint64_t compile_term() {
   // type of term is grammar attribute
   return ltype;
 }
+
+
+uint64_t compile_shift() { // [bitwise-shift-compilation]
+  uint64_t ltype;
+  uint64_t operator_symbol;
+  uint64_t rtype;
+
+  // assert: n = allocated_temporaries
+
+  ltype = compile_arithmetic();
+
+  // assert: allocated_temporaries == n + 1
+
+  while (is_shift()) {
+    operator_symbol = symbol;
+
+    get_symbol();
+
+    rtype = compile_arithmetic();
+
+    // assert: allocated_temporaries == n + 2
+
+    if (ltype != rtype)
+      type_warning(ltype, rtype);
+
+    if (operator_symbol == SYM_SLL)
+      emit_sll(previous_temporary(), previous_temporary(), current_temporary());
+    else if (operator_symbol == SYM_SRL)
+      emit_srl(previous_temporary(), previous_temporary(), current_temporary());
+
+
+    tfree(1);
+  }
+
+  // assert: allocated_temporaries == n + 1
+
+  // type of term is grammar attribute
+  return ltype;
+}
+
+
+
 
 uint64_t compile_factor() {
   uint64_t cast;
@@ -7127,6 +7194,20 @@ void emit_mul(uint64_t rd, uint64_t rs1, uint64_t rs2) {
 
   ic_mul = ic_mul + 1;
 }
+
+void emit_sll(uint64_t rd, uint64_t rs1, uint64_t rs2) {  // [bitwise-shift-compilation]
+  emit_instruction(encode_r_format(F7_SLL, rs2, rs1, F3_SLL, rd, OP_OP));
+
+  ic_sll = ic_sll + 1;
+}
+
+void emit_srl(uint64_t rd, uint64_t rs1, uint64_t rs2) {  // [bitwise-shift-compilation]
+  emit_instruction(encode_r_format(F7_SRL, rs2, rs1, F3_SRL, rd, OP_OP));
+  
+  ic_srl = ic_srl + 1;
+}
+
+
 
 void emit_divu(uint64_t rd, uint64_t rs1, uint64_t rs2) {
   emit_instruction(encode_r_format(F7_DIVU, rs2, rs1, F3_DIVU, rd, OP_OP));
