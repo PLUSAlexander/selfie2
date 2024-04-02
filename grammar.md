@@ -53,9 +53,9 @@ statement  = assignment ";" | if | while | call ";" | return ";" .
 
 assignment = ( [ "*" ] identifier | "*" "(" expression ")" ) "=" expression .
 
-expression = arithmetic [ ( "==" | "!=" | "<" | ">" | "<=" | ">=" ) arithmetic ] .
+expression = shift [ ( "==" | "!=" | "<" | ">" | "<=" | ">=" ) shift ] .
 
-shift      = arithmetic [ ("<<" | ">>") arithmetic ]  . 
+shift      = arithmetic [ ( "<<" | ">>" ) arithmetic ]  . 
 
 arithmetic = term { ( "+" | "-" ) term } .
 

@@ -5040,7 +5040,7 @@ uint64_t compile_expression() {
 
   // assert: n = allocated_temporaries
 
-  ltype = compile_arithmetic();
+  ltype = compile_shift();  // [bitwise-shift-compilation] changed from compile_arithmetic to compile_shift
 
   // assert: allocated_temporaries == n + 1
 
@@ -5050,7 +5050,7 @@ uint64_t compile_expression() {
 
     get_symbol();
 
-    rtype = compile_arithmetic();
+    rtype = compile_shift(); // detto
 
     // assert: allocated_temporaries == n + 2
 
