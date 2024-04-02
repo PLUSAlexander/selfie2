@@ -468,7 +468,7 @@ uint64_t SYM_SRL          = 35; // >>
 uint64_t SYM_INT      = 30; // int
 uint64_t SYM_CHAR     = 31; // char
 uint64_t SYM_UNSIGNED = 32; // unsigned
-uint64_t SYM_CONST    = 33; // const
+uint64_t SYM_CONST    = 35; // const  changed from 33 to 35 for [bitwise-shift-execution]
 
 uint64_t* SYMBOLS; // strings representing symbols
 
@@ -539,6 +539,8 @@ void init_scanner () {
   *(SYMBOLS + SYM_GT)           = (uint64_t) ">";
   *(SYMBOLS + SYM_GEQ)          = (uint64_t) ">=";
   *(SYMBOLS + SYM_ELLIPSIS)     = (uint64_t) "...";
+  *(SYMBOLS + SYM_SLL)          = (uint64_t) "<<"; // // [bitwise-shift-compilation]
+  *(SYMBOLS + SYM_SRL)          = (uint64_t) ">>"; // // [bitwise-shift-compilation]
 
   *(SYMBOLS + SYM_INT)      = (uint64_t) "int";
   *(SYMBOLS + SYM_CHAR)     = (uint64_t) "char";
