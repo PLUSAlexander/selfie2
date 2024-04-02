@@ -55,6 +55,8 @@ assignment = ( [ "*" ] identifier | "*" "(" expression ")" ) "=" expression .
 
 expression = arithmetic [ ( "==" | "!=" | "<" | ">" | "<=" | ">=" ) arithmetic ] .
 
+shift      = arithmetic [ ("<<" | ">>") arithmetic]  . 
+
 arithmetic = term { ( "+" | "-" ) term } .
 
 term       = factor { ( "*" | "/" | "%" ) factor } .
