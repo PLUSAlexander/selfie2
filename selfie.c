@@ -4074,16 +4074,26 @@ void get_symbol() {
           get_character();
 
           symbol = SYM_LEQ;
-        } else
+        } else if (character == CHAR_LT) {  // [bitwise-shift-compilation]
+          get_character();
+
+          symbol = SYM_SLL;
+        } else 
+
           symbol = SYM_LT;
-      } else if (character == CHAR_GT) {
+      } else if (character == CHAR_GT) { // [bitwise-shift-compilation]
         get_character();
 
         if (character == CHAR_EQUAL) {
           get_character();
 
           symbol = SYM_GEQ;
-        } else
+        } else if (character == CHAR_GT) {
+          get_character();
+
+          symbol = SYM_SRL;
+        } else 
+
           symbol = SYM_GT;
       } else if (character == CHAR_DOT) {
         get_character();
