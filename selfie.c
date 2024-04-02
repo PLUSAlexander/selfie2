@@ -1585,6 +1585,9 @@ void do_mul();
 void do_divu();
 void do_remu();
 
+void do_sll(); // [bitwise-shift-compilation]
+void do_srl(); // [bitwise-shift-compilation]
+
 void do_sltu();
 
 uint64_t print_load();
@@ -1836,6 +1839,9 @@ uint64_t nopc_store = 0;
 uint64_t nopc_beq   = 0;
 uint64_t nopc_jal   = 0;
 uint64_t nopc_jalr  = 0;
+
+uint64_t nopc_sll   = 0; // [bitwise-shift-compilation]
+uint64_t nopc_srl   = 0; // [bitwise-shift-compilation]
 
 // source profile
 
@@ -9106,6 +9112,55 @@ void do_add() {
 
   ic_add = ic_add + 1;
 }
+
+void do_sll() {  // [bitwise-shift-compilation]
+  uint64_t next_rd_value;
+
+  read_register(rs1);
+  read_register(rs2);
+
+  if (rd != REG_ZR) {
+    // semantics of sll
+    next_rd_value = *(registers + rs1) << *(registers + rs2);
+
+    if (*(registers + rd) != next_rd_value)
+      *(registers + rd) = next_rd_value;
+    else
+      nopc_sll = nopc_sll + 1;  
+  } else
+    nopc_sll = nopc_sll + 1;
+
+  write_register(rd);
+
+  pc = pc + INSTRUCTIONSIZE;
+
+  ic_sll = ic_sll + 1;
+}
+
+void do_srl() {  // [bitwise-shift-compilation]
+  uint64_t next_rd_value;
+
+  read_register(rs1);
+  read_register(rs2);
+
+  if (rd != REG_ZR) {
+    // semantics of srl
+    next_rd_value = *(registers + rs1) >> *(registers + rs2);
+
+    if (*(registers + rd) != next_rd_value)
+      *(registers + rd) = next_rd_value;
+    else
+      nopc_srl = nopc_srl + 1;  
+  } else
+    nopc_srl = nopc_srl + 1;
+
+  write_register(rd);
+
+  pc = pc + INSTRUCTIONSIZE;
+
+  ic_srl = ic_srl + 1;
+}
+
 
 void do_sub() {
   uint64_t next_rd_value;
