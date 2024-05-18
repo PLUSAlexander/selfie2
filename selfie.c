@@ -5265,13 +5265,47 @@ void type_warning(uint64_t expected, uint64_t found)
 //[array-multidimensional]
 uint64_t compile_array(uint64_t *entry)
 {
+    uint64_t array_length;
+    uint64_t array_length_temp;
+
     uint64_t *desc;
+    uint64_t dimension_num;
+
+    array_length = 0;
+
+    dimension_num = 1;
     desc = entry + 9;
 
-    if (*desc > 7)
-      return SIZEOFUINT;
-    else
-      return SIZEOFUINT;
+    while (symbol == SYM_LBRACKET)
+    {
+
+        get_symbol();
+        // Get size of array, must be literal
+        array_length_temp = compile_value();
+        if (array_length_temp == 0)
+            syntax_error_message("Array length must be greater or equal to 1");
+
+        if (array_length == 0)
+            array_length = array_length_temp;
+        else
+            array_length = array_length * array_length_temp;
+
+        if (dimension_num > 1)
+        {
+            // Allocate memory for dimension descriptor
+            *desc = (uint64_t)smalloc(1 * SIZEOFUINT64STAR + 1 * SIZEOFUINT64);
+
+            // Insert descriptor at end of list
+            desc = (uint64_t *)*desc;
+            *desc = 0; // Mark as last descriptor
+            *(desc + 1) = array_length_temp;
+        }
+        // Next dimension
+        dimension_num = dimension_num + 1;
+
+        get_expected_symbol(SYM_RBRACKET);
+    }
+    return array_length;
 }
 
 //[struct-declaration]
